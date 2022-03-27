@@ -55,4 +55,35 @@ router.route('/signup')
   }
 });
 
+router.get('/programRoom/:id', function(request, response) {
+   if (request.params.id) {
+     Program.findOne({_id: request.params.id}, function(error, info) {
+       if (error) {
+         console.log(error);
+         response.render('error');
+       }
+       if (info) {
+         response.render('programRoom', {content: info.content, roomId: info.id});
+       } else {
+         response.render('error');
+       }
+     })
+   } else {
+     response.render('error');
+   }
+ });
+
+ router.get('/programRoom', function(request, response) {
+   var program = new Program();
+
+   program.save(function(error, info) {
+     if (error) {
+       console.log(error);
+       response.render('error');
+     } else {
+       response.redirect('/programRoom/' + info._id);
+     }
+   })
+ });
+
 module.exports = router;
