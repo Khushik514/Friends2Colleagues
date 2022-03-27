@@ -6,7 +6,12 @@ router.get('/', function(request, response, next) {
   response.render('index', { title: 'Friends2Colleagues - A portal to gear you up!' });
 });
 
-router.route('/signin')
+ router.get('/signout', function (request, response) {
+   request.logout();
+   response.redirect('/');
+ });
+
+ router.route('/signin')
 .get(function(request, response, next){
   response.render('signin', { title: 'Friends2Colleagues - Sign In!' });
 })
