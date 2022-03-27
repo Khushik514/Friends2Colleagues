@@ -6,12 +6,16 @@ router.get('/', function(request, response, next) {
   response.render('index', { title: 'Friends2Colleagues - A portal to gear you up!' });
 });
 
- router.get('/signout', function (request, response) {
-   request.logout();
-   response.redirect('/');
- });
+router.get('/index', function(request, response, next) {
+  response.render('index', { title: 'Friends2Colleagues - A portal to gear you up!' });
+});
 
- router.route('/signin')
+router.get('/signout', function (request, response) {
+  request.logout();
+  response.redirect('/');
+});
+
+router.route('/signin')
 .get(function(request, response, next){
   response.render('signin', { title: 'Friends2Colleagues - Sign In!' });
 })
@@ -33,7 +37,7 @@ router.route('/signup')
   request.checkBody('password', 'Empty Password').notEmpty();
   request.checkBody('password', 'Confirm Password and Password do not match').equals(confirmPassword).notEmpty();
 
-  var errs = request.ationErrors();
+  var errs = request.validationErrors();
   if (errs) {
     response.render('signup', {
       name: request.body.name,
@@ -55,35 +59,35 @@ router.route('/signup')
   }
 });
 
+router.get('/programRoom', function(request, response) {
+  var program = new Program();
+
+  program.save(function(error, info) {
+    if (error) {
+      console.log(error);
+      response.render('error');
+    } else {
+      response.redirect('/programRoom/' + info._id);
+    }
+  })
+});
+
 router.get('/programRoom/:id', function(request, response) {
-   if (request.params.id) {
-     Program.findOne({_id: request.params.id}, function(error, info) {
-       if (error) {
-         console.log(error);
-         response.render('error');
-       }
-       if (info) {
-         response.render('programRoom', {content: info.content, roomId: info.id});
-       } else {
-         response.render('error');
-       }
-     })
-   } else {
-     response.render('error');
-   }
- });
-
- router.get('/programRoom', function(request, response) {
-   var program = new Program();
-
-   program.save(function(error, info) {
-     if (error) {
-       console.log(error);
-       response.render('error');
-     } else {
-       response.redirect('/programRoom/' + info._id);
-     }
-   })
- });
+  if (request.params.id) {
+    Program.findOne({_id: request.params.id}, function(error, info) {
+      if (error) {
+        console.log(error);
+        response.render('error');
+      }
+      if (info) {
+        response.render('programRoom', {content: info.content, roomid: info.id});
+      } else {
+        response.render('error');
+      }
+    })
+  } else {
+    response.render('error');
+  }
+});
 
 module.exports = router;

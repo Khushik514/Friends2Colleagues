@@ -1,0 +1,196 @@
+<div class="container" id="index-container">
+  <div class="row">
+    <div class="col-md-7">
+      <textarea id="code-editor"></textarea>
+    </div>
+    <div class="col-md-5" id="container2">
+        <div class="card" style="border: 0px white;">
+            <div id="video">
+                <div id="second">
+                    <p>Your User ID is: <span id="userid">...</span></p>
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Enter User Id to Call" id="receiverid"/>
+                        <span class="input-group-btn">
+                        <button type="button" class="btn bts-sm btn-success" id="call">Make a Call</button>
+                        </span>
+                    </div>
+                </div>
+                <div id="third">
+                    <p>Connect with <span id="user2id">...</span>
+                    <a href="#" class="btn btn-sm btn-danger" id="finishcall">End the call</a>
+                    </p>
+                </div>
+                <hr>
+                <span class="row">
+                <video autoplay id="video1" muted="true"></video>
+                <video autoplay id="video2"></video>
+                </span>
+            </div>
+        </div>
+        <hr>
+        <div class="card-header bg-warning">
+            Chat Section
+            <span style="float: right;" id="chatuser">
+                {{#if user}}
+                {{user.name}}
+                {{/if}}
+            </span>
+        </div>
+        <div class="card-body">
+            <ul class="media-list" style="height: 80px; overflow-y: scroll" id="chatmsglist">
+            </ul>
+        </div>
+        <div class="card-footer">
+          <div class="input-group">
+            <input type="text" class="form-control" placeholder="Enter message to send" id="usermsg"/>
+            <span class="input-group-btn">
+              <button type="button" class="btn btn-warning" onclick="sendMsg()">Send</button>
+            </span>
+          </div>
+        </div>
+    </div>
+  </div>
+</div>
+<input type="hidden" value="{{roomid}}" id="roomid"/>
+
+<script>
+  var EditorClient = ot.EditorClient;
+  var SocketIOAdapter = ot.SocketIOAdapter;
+  var CodeMirrorAdapter = ot.CodeMirrorAdapter;
+
+  var socket = io.connect('http://localhost:3000');
+  var editor = CodeMirror.fromTextArea(document.getElementById("code-editor"), {
+    lineNumbers: true,
+    theme: "monokai"
+  });
+
+  var code = $('#code-editor').val();
+  var cmClient;
+  function init(str, revision, clients, serverAdapter) {
+    if (!code) {
+      editor.setValue(str);
+    }
+
+    cmClient = window.cmClient = new EditorClient(
+      revision, clients, serverAdapter, new CodeMirrorAdapter(editor)
+    );
+  };
+
+  socket.on('doc', function(obj) {
+    init(obj.str, obj.revision, obj.clients, new SocketIOAdapter(socket));
+  });
+
+  var user = $("#chatuser").val();
+  if(user === "") {
+    var userId = Math.floor(Math.random() * 9999).toString();
+    user = "User" + userId;
+    $("#chatuser").text(user);
+  };
+
+  var roomid = $('#roomid').val();
+  socket.emit('joinRoom', {room: roomid, user: user});
+
+  var usermsg = function(name, text) {
+    return ('<li class="media">' +
+      '<strong>' + name + '</strong> : ' + text +
+      '</li>'
+    );
+  };
+
+  var sendMsg = function() {
+    var usermsg = $('#usermsg').val();
+    if(usermsg === "")
+        return;
+    socket.emit('chatMsg', {message: usermsg, user: user});
+    $('#usermsg').val("");
+  };
+
+  socket.on('chatMsg', function(data) {
+    $('#chatmsglist').append(usermsg(data.user, data.message));
+  });
+
+  // This code section is taken from PeerJS examples.
+  // Compatibility shim
+  var localStream;
+  var remoteStream;
+    navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+    // PeerJS object
+    var peer = new Peer(user + roomid);
+    window.peer = peer;
+    peer.on('open', function(){
+      $('#userid').text(peer.id);
+    });
+
+  navigator.mediaDevices.getUserMedia({video: true, audio: true}).then((stream) =>{
+    localStream = stream;
+    window.localStream = stream;
+    //Plays it on your video
+    $("#video1").prop("srcObject", localStream);
+  });
+
+    // Receiving a call
+    peer.on('call', function(call){
+      // Answer the call automatically (instead of prompting user) for demo purposes
+      call.answer(localStream);
+      third(call);
+    });
+
+    peer.on('error', function(err){
+      alert(err.message);
+      // Return to step 2 if error occurs
+      second();
+    });
+
+    // Click handlers setup
+    $(function(){
+      $('#call').click(function(){
+        // Initiate a call!
+        var call = peer.call($('#receiverid').val(), window.localStream);
+        third(call);
+      });
+      $('#finishcall').click(function(){
+        window.existingCall.close();
+        second();
+      });
+      first();
+    });
+    function first () {
+      // Get audio/video stream
+      navigator.getUserMedia = (
+        navigator.getUserMedia ||
+        navigator.webkitGetUserMedia ||
+        navigator.mozGetUserMedia ||
+        navigator.msGetUserMedia
+    );
+      navigator.getUserMedia({audio: true, video: true}, function(stream){
+        // Set your video displays
+       $('#video1').prop("srcObject", stream);
+       localStream = stream;
+       window.localStream = stream;
+        second();
+      }, function(){ $('#first-error').show(); });
+    }
+
+    function second () {
+      $('#first, #third').hide();
+      $('#second').show();
+    }
+
+    function third (call) {
+      // Hang up on an existing call if present
+      if (window.existingCall) {
+        window.existingCall.close();
+      }
+      // Wait for stream on the call, then set peer video display
+      call.on('stream', function(stream){
+        $('#video2').prop("srcObject", stream);
+      });
+      // UI stuff
+      window.existingCall = call;
+      $('#user2id').text(call.peer);
+      call.on('close', second);
+      $('#first, #second').hide();
+      $('#third').show();
+    }
+
+</script>
