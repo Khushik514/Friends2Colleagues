@@ -1,0 +1,36 @@
+<div class="container signup-container">
+    <form class="signup p-2" method="post">
+        {{#each errorMessages}}
+            <div class="alert alert-danger">
+                {{this.msg}}
+            </div>
+        {{/each}}
+        <h2 class="signup-h2 p-2">Sign Up</h2>
+        <br/>
+        <div class="form-group p-2">
+            <label for="name">Name:</label>
+            <br/>
+            <input type="text" class="form-control" name="name" id="name" placeholder="Enter name" require="">
+        </div>
+        <div class="form-group p-2">
+            <label for="email">Email:</label>
+            <br/>
+            <input type="email" class="form-control" name="email" id="email" placeholder="Enter email" require="">
+        </div>
+        <div class="form-group p-2">
+            <label for="password">Password:</label>
+            <br/>
+            <input type="password" class="form-control" name="password" id="password" placeholder="Password" require="">
+        </div>
+        <div class="form-group p-2">
+            <label for="confirm-password">Confirm Password:</label>
+            <br/>
+            <input type="password" class="form-control" name="confirm_Password" id="confirm_Password" placeholder="Re-enter Password" require="">
+        </div>
+        <br/>
+        <hr>
+        <div class="text-center">
+            <button type="submit" class="btn btn-lg btn-warning">Start Levelling Up</button>
+        </div>
+    </form>
+</div>

@@ -1,0 +1,21 @@
+.signin {
+    max-width: 400px;
+    margin: 0 auto;
+    background-color: white;
+    border-radius: 5%;
+}
+
+.signin-h2 {
+    font-weight: bold;
+    text-align: center!important;
+}
+
+.signin-container {
+    margin-top: 5%;
+    background-color: white;
+}
+@media (max-width: 979px) {
+body {
+  padding-top: 10%;
+}
+}
